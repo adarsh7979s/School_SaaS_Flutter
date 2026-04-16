@@ -10,10 +10,45 @@ import 'package:edu_id_saas/screens/student_profile_screen.dart';
 void main() {
   testWidgets('login screen renders demo roles', (WidgetTester tester) async {
     await tester.pumpWidget(const EduIdApp());
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Digital Student Identity'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
+
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('EDU-ID SaaS'), findsOneWidget);
     expect(find.text('Login as a demo role'), findsOneWidget);
     expect(find.text('Aanya Sharma'), findsOneWidget);
+  });
+
+  testWidgets('completed onboarding opens login screen on launch', (
+    WidgetTester tester,
+  ) async {
+    final state = AppState()..completeOnboarding();
+
+    await tester.pumpWidget(EduIdApp(appState: state));
+    await tester.pumpAndSettle();
+
+    expect(find.text('EDU-ID SaaS'), findsOneWidget);
+    expect(find.text('Login as a demo role'), findsOneWidget);
+    expect(find.text('Digital Student Identity'), findsNothing);
+  });
+
+  testWidgets('logged in user opens dashboard on launch', (
+    WidgetTester tester,
+  ) async {
+    final state = AppState()
+      ..completeOnboarding()
+      ..loginAs(AppState().loginOptions.firstWhere((user) => user.id == 'u1'));
+
+    await tester.pumpWidget(EduIdApp(appState: state));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.textContaining('Welcome,'), findsOneWidget);
   });
 
   testWidgets('security guard dashboard shows QR attendance action', (

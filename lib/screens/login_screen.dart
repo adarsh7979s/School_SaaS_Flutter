@@ -7,7 +7,7 @@ import 'package:edu_id_saas/screens/dashboard_screen.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  static const routeName = '/';
+  static const routeName = '/login';
 
   @override
   Widget build(BuildContext context) {

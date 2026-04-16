@@ -24,10 +24,12 @@ class AppState extends ChangeNotifier {
   String? _selectedSchoolId;
   String? _scannerMessage;
   bool _isProcessingPayment = false;
+  bool _hasCompletedOnboarding = false;
 
   AppUser? get currentUser => _currentUser;
   String? get scannerMessage => _scannerMessage;
   bool get isProcessingPayment => _isProcessingPayment;
+  bool get hasCompletedOnboarding => _hasCompletedOnboarding;
 
   List<School> get schools => List.unmodifiable(_schools);
 
@@ -91,6 +93,12 @@ class AppState extends ChangeNotifier {
         ? _schools.first.id
         : user.schoolId;
     _scannerMessage = null;
+    notifyListeners();
+  }
+
+  void completeOnboarding() {
+    if (_hasCompletedOnboarding) return;
+    _hasCompletedOnboarding = true;
     notifyListeners();
   }
 
