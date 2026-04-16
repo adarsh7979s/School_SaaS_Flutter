@@ -38,6 +38,7 @@ dependencies:
   qr_flutter: ^4.1.0
   intl: ^0.20.2
   lottie: ^3.3.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,13 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/edu_id_logo.png"
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -62,6 +70,7 @@ flutter:
   uses-material-design: true
   assets:
     - lib/lottie/
+    - assets/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:edu_id_saas/models/app_models.dart';
@@ -10,7 +11,6 @@ import 'package:edu_id_saas/screens/student_list_screen.dart';
 import 'package:edu_id_saas/screens/student_profile_screen.dart';
 import 'package:edu_id_saas/screens/subscription_screen.dart';
 import 'package:edu_id_saas/widgets/app_shell.dart';
-import 'package:edu_id_saas/widgets/empty_state_card.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -36,11 +36,36 @@ class DashboardScreen extends StatelessWidget {
       title: 'Dashboard',
       actions: [
         IconButton(
-          onPressed: () {
-            state.logout();
-            Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+          onPressed: () async {
+            final shouldLogout = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Sign Out'),
+                content:
+                    const Text('Are you sure you want to sign out?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Cancel'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Sign Out'),
+                  ),
+                ],
+              ),
+            );
+            if (shouldLogout == true && context.mounted) {
+              state.logout();
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                LoginScreen.routeName,
+                (route) => false,
+              );
+            }
           },
           icon: const Icon(Icons.logout_rounded),
+          tooltip: 'Sign Out',
         ),
       ],
       child: ListView(
@@ -52,107 +77,65 @@ class DashboardScreen extends StatelessWidget {
             _SchoolSwitcher(state: state, currentSchool: school),
           if (user.role == UserRole.superAdmin) const SizedBox(height: 18),
           if (state.isSubscriptionExpired)
-            const EmptyStateCard(
-              title: 'Subscription expired',
-              message:
-                  'Student browsing and QR attendance are locked for this school until renewal succeeds.',
-              icon: Icons.lock_outline_rounded,
-            ),
-          if (state.isSubscriptionExpired) const SizedBox(height: 18),
-          Text(
-            'Quick actions',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: cards.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1,
-              mainAxisSpacing: 14,
-              childAspectRatio: 1.9,
-            ),
-            itemBuilder: (context, index) {
-              final card = cards[index];
-              return Card(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: card.enabled ? card.onTap : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDECE7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE8A494)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded,
+                      color: Color(0xFFAD3D28), size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: card.enabled
-                              ? const Color(0xFFDBE9FA)
-                              : const Color(0xFFE9EDF0),
-                          child: Icon(
-                            card.icon,
-                            color: card.enabled
-                                ? const Color(0xFF174B7A)
-                                : Colors.grey,
-                          ),
+                        Text(
+                          'Subscription Expired',
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: const Color(0xFFAD3D28),
+                                    fontWeight: FontWeight.w700,
+                                  ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                card.title,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(card.subtitle),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          card.enabled
-                              ? Icons.arrow_forward_rounded
-                              : Icons.lock_outline_rounded,
-                          color: card.enabled
-                              ? const Color(0xFF174B7A)
-                              : Colors.grey,
+                        const SizedBox(height: 2),
+                        Text(
+                          'Features are locked until renewal succeeds.',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: const Color(0xFF7A2E1F),
+                                  ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 18),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Role permissions',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Student directory: ${state.canAccessStudentDirectory() ? 'Allowed' : 'Blocked'}',
-                  ),
-                  Text(
-                    'Own profile access: ${state.canAccessOwnStudentProfile() ? 'Allowed' : 'Blocked'}',
-                  ),
-                  Text(
-                    'QR scanning: ${state.canAccessScanning() ? 'Allowed' : 'Blocked'}',
-                  ),
-                  Text(
-                    'Subscription admin: ${state.canAccessSubscription() ? 'Allowed' : 'Blocked'}',
-                  ),
                 ],
               ),
             ),
+          if (state.isSubscriptionExpired) const SizedBox(height: 18),
+
+          // ── Stats row (admin/teacher only) ──
+          if (user.role != UserRole.securityGuard)
+            _StatsRow(state: state, user: user),
+          if (user.role != UserRole.securityGuard) const SizedBox(height: 18),
+
+          Text(
+            'Quick Actions',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
+          const SizedBox(height: 12),
+          ...cards.map((card) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ActionCard(card: card),
+              )),
+          const SizedBox(height: 18),
+          _PermissionsCard(state: state),
         ],
       ),
     );
@@ -176,6 +159,7 @@ class DashboardScreen extends StatelessWidget {
                 ? 'Browse school-wise students and profiles'
                 : 'Directory is locked until subscription renewal',
             icon: Icons.groups_rounded,
+            color: const Color(0xFF1565C0),
             enabled: state.canAccessStudentDirectory(),
             onTap: () => Navigator.pushNamed(
               context,
@@ -188,6 +172,7 @@ class DashboardScreen extends StatelessWidget {
                 ? 'Review plan status and payment flow'
                 : 'View-only role',
             icon: Icons.workspace_premium_rounded,
+            color: const Color(0xFFE65100),
             enabled: state.canAccessSubscription(),
             onTap: () => Navigator.pushNamed(
               context,
@@ -199,8 +184,9 @@ class DashboardScreen extends StatelessWidget {
         return [
           _DashboardAction(
             title: 'My Profile',
-            subtitle: 'View student details and attendance history',
+            subtitle: 'View details and attendance',
             icon: Icons.person_rounded,
+            color: const Color(0xFF2E7D32),
             enabled: student != null,
             onTap: () => Navigator.pushNamed(
               context,
@@ -210,13 +196,27 @@ class DashboardScreen extends StatelessWidget {
           ),
           _DashboardAction(
             title: 'My Digital ID',
-            subtitle: 'Open QR-enabled school ID card',
+            subtitle: 'QR-enabled school ID card',
             icon: Icons.badge_rounded,
-            enabled: student != null,
+            color: const Color(0xFF6A1B9A),
+            enabled: student != null && !state.isFeatureLocked,
             onTap: () => Navigator.pushNamed(
               context,
               IdCardScreen.routeName,
               arguments: student?.id,
+            ),
+          ),
+          _DashboardAction(
+            title: 'Subscription',
+            subtitle: state.isSubscriptionExpired
+                ? 'Your school subscription has expired'
+                : 'View school plan status',
+            icon: Icons.workspace_premium_rounded,
+            color: const Color(0xFFE65100),
+            enabled: true,
+            onTap: () => Navigator.pushNamed(
+              context,
+              SubscriptionScreen.routeName,
             ),
           ),
         ];
@@ -228,6 +228,7 @@ class DashboardScreen extends StatelessWidget {
                 ? 'Scan student codes for entry and exit'
                 : 'Scanner is locked for expired subscriptions',
             icon: Icons.qr_code_scanner_rounded,
+            color: const Color(0xFF00838F),
             enabled: state.canAccessScanning(),
             onTap: () => Navigator.pushNamed(
               context,
@@ -235,9 +236,10 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           _DashboardAction(
-            title: 'Subscription Status',
+            title: 'Subscription',
             subtitle: 'View whether this school is active or locked',
             icon: Icons.lock_clock_outlined,
+            color: const Color(0xFFE65100),
             enabled: true,
             onTap: () => Navigator.pushNamed(
               context,
@@ -249,6 +251,181 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+// ── Stats Row ──
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({required this.state, required this.user});
+
+  final AppState state;
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final studentCount = state.visibleStudents.length;
+    final todayAttendance = state.schoolAttendance
+        .where((r) =>
+            r.timestamp.day == DateTime.now().day &&
+            r.timestamp.month == DateTime.now().month &&
+            r.timestamp.year == DateTime.now().year)
+        .toList();
+    final entryCount =
+        todayAttendance.where((r) => r.type == AttendanceType.entry).length;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _StatTile(
+            icon: Icons.groups_outlined,
+            label: 'Students',
+            value: '$studentCount',
+            color: const Color(0xFF1565C0),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatTile(
+            icon: Icons.login_rounded,
+            label: 'Entries Today',
+            value: '$entryCount',
+            color: const Color(0xFF2E7D32),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatTile(
+            icon: Icons.calendar_today_rounded,
+            label: 'Plan Ends',
+            value: DateFormat('dd MMM').format(
+              state.currentSchool?.subscriptionEndsOn ?? DateTime.now(),
+            ),
+            color: state.isSubscriptionExpired
+                ? const Color(0xFFAD3D28)
+                : const Color(0xFFE65100),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: color.withValues(alpha: 0.8),
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Action Card ──
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({required this.card});
+
+  final _DashboardAction card;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: card.enabled ? card.onTap : null,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: card.enabled
+                      ? card.color.withValues(alpha: 0.10)
+                      : const Color(0xFFE9EDF0),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  card.icon,
+                  color: card.enabled ? card.color : Colors.grey,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      card.title,
+                      style:
+                          Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      card.subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.black54,
+                              ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                card.enabled
+                    ? Icons.arrow_forward_ios_rounded
+                    : Icons.lock_outline_rounded,
+                size: 16,
+                color: card.enabled ? card.color : Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Hero Card ──
 class _HeroCard extends StatelessWidget {
   const _HeroCard({required this.user, required this.school});
 
@@ -260,40 +437,78 @@ class _HeroCard extends StatelessWidget {
     final state = context.read<AppState>();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          colors: [Color(0xFF123C63), Color(0xFF1E6781)],
+          colors: [Color(0xFF0D2B45), Color(0xFF123C63), Color(0xFF1E6781)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x330C2D4C),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Welcome, ${user.name}',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back,',
+                      style:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.white60,
+                              ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user.name,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                child: Text(
+                  user.name[0],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${state.describeRole(user.role)} - ${school.name}',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _InfoChip(
-                label: school.planName,
-                icon: Icons.workspace_premium_outlined,
+                label: state.describeRole(user.role),
+                icon: Icons.verified_user_rounded,
+              ),
+              _InfoChip(
+                label: school.name,
+                icon: Icons.school_rounded,
               ),
               _InfoChip(
                 label: school.isExpired ? 'Expired' : 'Active',
@@ -309,6 +524,7 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
+// ── School Switcher ──
 class _SchoolSwitcher extends StatelessWidget {
   const _SchoolSwitcher({required this.state, required this.currentSchool});
 
@@ -320,24 +536,129 @@ class _SchoolSwitcher extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: DropdownButtonFormField<String>(
-          value: currentSchool.id,
-          decoration: const InputDecoration(
-            labelText: 'Switch School',
-            prefixIcon: Icon(Icons.school_outlined),
-          ),
-          items: state.schools
-              .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item.id,
-                  child: Text(item.name),
-                ),
-              )
-              .toList(growable: false),
-          onChanged: (value) {
-            if (value != null) state.switchSchool(value);
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Multi-School Context',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: currentSchool.id,
+              decoration: const InputDecoration(
+                labelText: 'Active School',
+                prefixIcon: Icon(Icons.school_outlined),
+              ),
+              items: state.schools
+                  .map(
+                    (item) => DropdownMenuItem<String>(
+                      value: item.id,
+                      child: Text(item.name),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: (value) {
+                if (value != null) state.switchSchool(value);
+              },
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Permissions Card ──
+class _PermissionsCard extends StatelessWidget {
+  const _PermissionsCard({required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Role Permissions',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            _PermRow(
+              label: 'Student directory',
+              allowed: state.canAccessStudentDirectory(),
+            ),
+            _PermRow(
+              label: 'Own profile access',
+              allowed: state.canAccessOwnStudentProfile(),
+            ),
+            _PermRow(
+              label: 'QR scanning',
+              allowed: state.canAccessScanning(),
+            ),
+            _PermRow(
+              label: 'Subscription admin',
+              allowed: state.canAccessSubscription(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PermRow extends StatelessWidget {
+  const _PermRow({required this.label, required this.allowed});
+
+  final String label;
+  final bool allowed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Icon(
+            allowed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            size: 18,
+            color: allowed ? const Color(0xFF2E7D32) : const Color(0xFFBD5A2B),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: allowed
+                  ? const Color(0xFFE8F5E9)
+                  : const Color(0xFFFDE3DA),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              allowed ? 'Allowed' : 'Blocked',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: allowed
+                    ? const Color(0xFF2E7D32)
+                    : const Color(0xFFBD5A2B),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -360,13 +681,14 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
+          Icon(icon, size: 14, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
@@ -380,6 +702,7 @@ class _DashboardAction {
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.color,
     required this.enabled,
     required this.onTap,
   });
@@ -387,6 +710,7 @@ class _DashboardAction {
   final String title;
   final String subtitle;
   final IconData icon;
+  final Color color;
   final bool enabled;
   final VoidCallback onTap;
 }

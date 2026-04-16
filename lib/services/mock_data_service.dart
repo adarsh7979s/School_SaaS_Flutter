@@ -9,7 +9,7 @@ class MockDataService {
         id: 'school_alpha',
         name: 'Green Valley High School',
         logoUrl:
-            'https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=200&q=80',
+            'https://picsum.photos/seed/school_alpha/200',
         planName: 'Enterprise Plus',
         subscriptionStatus: SubscriptionStatus.active,
         subscriptionEndsOn: DateTime(2026, 12, 31),
@@ -18,7 +18,7 @@ class MockDataService {
         id: 'school_beta',
         name: 'Sunrise Public Academy',
         logoUrl:
-            'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=200&q=80',
+            'https://picsum.photos/seed/school_beta/200',
         planName: 'Starter',
         subscriptionStatus: SubscriptionStatus.expired,
         subscriptionEndsOn: DateTime(2026, 3, 15),
@@ -33,18 +33,24 @@ class MockDataService {
         name: 'Aanya Sharma',
         role: UserRole.superAdmin,
         schoolId: 'school_alpha',
+        email: 'superadmin@eduid.com',
+        password: 'password123',
       ),
       AppUser(
         id: 'u2',
         name: 'Rahul Mehta',
         role: UserRole.schoolAdmin,
         schoolId: 'school_alpha',
+        email: 'admin.greenvalley@eduid.com',
+        password: 'password123',
       ),
       AppUser(
         id: 'u3',
         name: 'Meera Iyer',
         role: UserRole.teacher,
         schoolId: 'school_alpha',
+        email: 'teacher.greenvalley@eduid.com',
+        password: 'password123',
       ),
       AppUser(
         id: 'u4',
@@ -52,18 +58,24 @@ class MockDataService {
         role: UserRole.student,
         schoolId: 'school_alpha',
         studentId: 's1',
+        email: 'arjun@greenvalley.edu',
+        password: 'password123',
       ),
       AppUser(
         id: 'u5',
         name: 'Vikram Yadav',
         role: UserRole.securityGuard,
         schoolId: 'school_alpha',
+        email: 'security.greenvalley@eduid.com',
+        password: 'password123',
       ),
       AppUser(
         id: 'u6',
         name: 'Nisha Kapoor',
         role: UserRole.schoolAdmin,
         schoolId: 'school_beta',
+        email: 'admin.sunrise@eduid.com',
+        password: 'password123',
       ),
       AppUser(
         id: 'u7',
@@ -71,12 +83,16 @@ class MockDataService {
         role: UserRole.student,
         schoolId: 'school_beta',
         studentId: 's5',
+        email: 'kabir@sunrise.edu',
+        password: 'password123',
       ),
       AppUser(
         id: 'u8',
         name: 'Rohan Das',
         role: UserRole.securityGuard,
         schoolId: 'school_beta',
+        email: 'security.sunrise@eduid.com',
+        password: 'password123',
       ),
     ];
   }
@@ -93,7 +109,7 @@ class MockDataService {
         routeName: 'Route 5',
         guardianName: 'Kiran Patel',
         imageUrl:
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+            'https://picsum.photos/seed/arjun/400',
         qrValue: 'EDU-ID|school_alpha|s1',
       ),
       Student(
@@ -106,7 +122,7 @@ class MockDataService {
         routeName: 'Route 1',
         guardianName: 'Anita Nair',
         imageUrl:
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+            'https://picsum.photos/seed/sara/400',
         qrValue: 'EDU-ID|school_alpha|s2',
       ),
       Student(
@@ -119,7 +135,7 @@ class MockDataService {
         routeName: 'Route 3',
         guardianName: 'Sonia Roy',
         imageUrl:
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+            'https://picsum.photos/seed/vihaan/400',
         qrValue: 'EDU-ID|school_alpha|s3',
       ),
       Student(
@@ -132,7 +148,7 @@ class MockDataService {
         routeName: 'Route 2',
         guardianName: 'Raj Verma',
         imageUrl:
-            'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=400&q=80',
+            'https://picsum.photos/seed/ishita/400',
         qrValue: 'EDU-ID|school_beta|s4',
       ),
       Student(
@@ -145,7 +161,7 @@ class MockDataService {
         routeName: 'Route 8',
         guardianName: 'Ritu Singh',
         imageUrl:
-            'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=400&q=80',
+            'https://picsum.photos/seed/kabir/400',
         qrValue: 'EDU-ID|school_beta|s5',
       ),
       Student(

@@ -10,9 +10,16 @@ import 'package:edu_id_saas/screens/qr_scanner_screen.dart';
 import 'package:edu_id_saas/screens/student_list_screen.dart';
 import 'package:edu_id_saas/screens/student_profile_screen.dart';
 import 'package:edu_id_saas/screens/subscription_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const EduIdApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final hasCompletedOnboarding =
+      prefs.getBool('has_completed_onboarding') ?? false;
+  final appState = AppState(hasCompletedOnboarding: hasCompletedOnboarding);
+
+  runApp(EduIdApp(appState: appState));
 }
 
 class EduIdApp extends StatelessWidget {
@@ -55,6 +62,12 @@ class EduIdApp extends StatelessWidget {
                 borderSide: const BorderSide(color: Color(0xFFCAD6E2)),
               ),
             ),
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+              },
+            ),
           ),
           home: _AppEntryScreen(state: state),
           routes: {
@@ -62,7 +75,8 @@ class EduIdApp extends StatelessWidget {
             LoginScreen.routeName: (_) => const LoginScreen(),
             DashboardScreen.routeName: (_) => const DashboardScreen(),
             StudentListScreen.routeName: (_) => const StudentListScreen(),
-            StudentProfileScreen.routeName: (_) => const StudentProfileScreen(),
+            StudentProfileScreen.routeName: (_) =>
+                const StudentProfileScreen(),
             IdCardScreen.routeName: (_) => const IdCardScreen(),
             QrScannerScreen.routeName: (_) => const QrScannerScreen(),
             SubscriptionScreen.routeName: (_) => const SubscriptionScreen(),

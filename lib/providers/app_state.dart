@@ -4,10 +4,12 @@ import 'package:flutter/foundation.dart';
 
 import 'package:edu_id_saas/models/app_models.dart';
 import 'package:edu_id_saas/services/mock_data_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState extends ChangeNotifier {
-  AppState({MockDataService? dataService})
-    : _dataService = dataService ?? const MockDataService() {
+  AppState({MockDataService? dataService, bool hasCompletedOnboarding = false})
+    : _dataService = dataService ?? const MockDataService(),
+      _hasCompletedOnboarding = hasCompletedOnboarding {
     _schools = _dataService.getSchools();
     _users = _dataService.getUsers();
     _students = _dataService.getStudents();
@@ -24,7 +26,7 @@ class AppState extends ChangeNotifier {
   String? _selectedSchoolId;
   String? _scannerMessage;
   bool _isProcessingPayment = false;
-  bool _hasCompletedOnboarding = false;
+  bool _hasCompletedOnboarding;
 
   AppUser? get currentUser => _currentUser;
   String? get scannerMessage => _scannerMessage;
@@ -72,8 +74,7 @@ class AppState extends ChangeNotifier {
 
   bool canAccessOwnStudentProfile() {
     return _currentUser?.role == UserRole.student &&
-        currentStudent != null &&
-        !isFeatureLocked;
+        currentStudent != null;
   }
 
   bool canAccessSubscription() {
@@ -96,10 +97,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<String?> authenticate(String email, String password) async {
+    await Future<void>.delayed(const Duration(seconds: 1)); // Simulate network request
+    for (final user in _users) {
+      if (user.email == email && user.password == password) {
+        loginAs(user);
+        return null; // Success
+      }
+    }
+    return 'Invalid email or password.';
+  }
+
   void completeOnboarding() {
     if (_hasCompletedOnboarding) return;
     _hasCompletedOnboarding = true;
     notifyListeners();
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('has_completed_onboarding', true);
+    });
   }
 
   void logout() {
@@ -128,8 +143,9 @@ class AppState extends ChangeNotifier {
   bool canViewStudent(String studentId) {
     final user = _currentUser;
     if (user == null) return false;
-    if (isFeatureLocked) return false;
+    // Students can always view their own profile, even if subscription expired
     if (user.role == UserRole.student) return user.studentId == studentId;
+    if (isFeatureLocked) return false;
     if (user.role == UserRole.securityGuard) return false;
 
     final student = getStudentById(studentId);

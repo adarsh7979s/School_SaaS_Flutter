@@ -30,6 +30,8 @@ class AppUser {
     required this.name,
     required this.role,
     required this.schoolId,
+    required this.email,
+    required this.password,
     this.studentId,
   });
 
@@ -37,6 +39,8 @@ class AppUser {
   final String name;
   final UserRole role;
   final String schoolId;
+  final String email;
+  final String password;
   final String? studentId;
 }
 
